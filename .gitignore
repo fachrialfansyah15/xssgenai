@@ -1,0 +1,12 @@
+﻿logs/
+*.log
+!logs/.gitkeep
+__pycache__/
+*.py[cod]
+.vscode/
+.pytest_cache/
+.env
+dist/
+build/
+*.egg-info/
+_slice.txt
