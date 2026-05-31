@@ -14,3 +14,4 @@ flask-sock
 simple-websocket
 gunicorn
 pandas
+nest_asyncio

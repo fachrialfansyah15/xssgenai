@@ -11,6 +11,17 @@ from playwright.sync_api import sync_playwright, Page, Frame, CDPSession, Error 
 from config import USER_AGENT  # gunakan UA normal dari config
 from network import make_request
 
+# -------------------------------------------------------------------
+# Fix: sync_playwright tidak bisa dijalankan di dalam asyncio event
+# loop yang sedang berjalan. nest_asyncio me-patch loop agar
+# sync_playwright bisa berjalan normal di dalam async context.
+# -------------------------------------------------------------------
+try:
+    import nest_asyncio as _nest_asyncio
+    _nest_asyncio.apply()
+except ImportError:
+    pass
+
 logger = logging.getLogger("xsscanner.dynamic")
 
 # ===================================================================
