@@ -814,7 +814,11 @@ def dynamic_dom_inspect(url: str, timeout: int = 30000, hash_fuzz: bool = True, 
     max_attempts = 2
     last_error: Exception | None = None
     playwright_success = False
-
+    try:
+        import nest_asyncio
+        nest_asyncio.apply()
+    except Exception:
+        pass
     for attempt in range(max_attempts):
         try:
             with sync_playwright() as pw:
@@ -1047,8 +1051,8 @@ def _requests_only_dom(url: str) -> List[Dict]:
 def run_with_coverage(url: str, inject_js: str, timeout: int = 30000) -> int:
     if os.name == 'nt':
         try:
-            import asyncio
-            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+            import nest_asyncio
+            nest_asyncio.apply()
         except Exception:
             pass
     total = 0
