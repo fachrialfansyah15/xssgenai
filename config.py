@@ -16,9 +16,9 @@ REQUEST_TIMEOUT: Final[int] = 15  # dalam detik
 REQUEST_DELAY_MIN: Final[float] = 0.3
 REQUEST_DELAY_MAX: Final[float] = 1.0
 
-MAX_URLS_TO_CRAWL: Final[int] = 30
-MAX_DEPTH_CRAWL: Final[int] = 6
-MAX_WORKERS: Final[int] = 5
+MAX_URLS_TO_CRAWL: Final[int] = 150
+MAX_DEPTH_CRAWL: Final[int] = 10
+MAX_WORKERS: Final[int] = 10
 
 # --- Logging / Paths ---
 LOG_DIR = Path("logs")

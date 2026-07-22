@@ -171,8 +171,13 @@ class XSSTesterPhasesMixin:
                     data = body
                     if method == "POST" and not is_form:
                         headers.setdefault("Content-Type", "application/json")
-                        data = json.dumps(body) if isinstance(body, dict) else body
-                    headers, data = apply_csrf(req_url, method, data if isinstance(data, dict) else {}, headers)
+                        # Keep dict for CSRF injection, serialize after
+                        csrf_data = body if isinstance(body, dict) else {}
+                        headers, csrf_data = apply_csrf(req_url, method, csrf_data, headers)
+                        data = json.dumps(csrf_data) if isinstance(csrf_data, dict) else csrf_data
+                    else:
+                        form_dict = data if isinstance(data, dict) else {}
+                        headers, data = apply_csrf(req_url, method, form_dict, headers)
                     resp = make_request(req_url, method, data=data, headers=headers)
                     content = resp.text if resp else ""
                 if resp and getattr(resp, "url", None):
@@ -238,18 +243,26 @@ class XSSTesterPhasesMixin:
             console.print(Panel(body, title="[cyan]Encoding reflections[/cyan]"))
         return False
 
-    def _dispatch_payload(self, url, method, name, template, is_form, payload):
+    def _dispatch_payload(self, url, method, name, template, is_form, payload, request_meta=None):
         tpl = dict(template)
         tpl[name] = payload
-        req, _, body = prepare_request_args(url, method, tpl, is_form)
+        req, extra_headers, body = prepare_request_args(url, method, tpl, is_form, request_meta=request_meta)
         if method == "GET" and not is_form:
+            headers = dict(extra_headers or {})
+            if headers:
+                return make_request(req, headers=headers)
             return make_request(req)
-        headers = None
+        headers = dict(extra_headers or {})
         data = body
         if method == "POST" and not is_form:
-            headers = {"Content-Type": "application/json"}
-            data = json.dumps(body) if isinstance(body, dict) else body
-        headers, data = apply_csrf(req, method, data if isinstance(data, dict) else {}, headers)
+            headers.setdefault("Content-Type", "application/json")
+            # Serialize BEFORE apply_csrf so we still have a dict for CSRF injection
+            csrf_data = body if isinstance(body, dict) else {}
+            headers, csrf_data = apply_csrf(req, method, csrf_data, headers)
+            data = json.dumps(csrf_data) if isinstance(csrf_data, dict) else csrf_data
+        else:
+            form_dict = data if isinstance(data, dict) else {}
+            headers, data = apply_csrf(req, method, form_dict, headers)
         return make_request(req, method, data=data, headers=headers)
 
     def _phase_attr_focus(self, url, method, name, template, is_form, sanitizer_map):
